@@ -28,15 +28,13 @@ OctoFit Tracker is a three-tier application for a school fitness program. The st
 
 ## Implementation decisions
 
-Record your plan here before editing code.
-
-- Presentation tier decision:
-- Logic tier decision:
-- Data tier decision:
-- Activity tracking approach:
-- Team management approach:
-- Leaderboard approach:
-- Workout suggestions approach:
+- Presentation tier decision: Keep route-level React components responsible for rendering only. Fetch through the shared API client, and give each capability an accessible loading state, useful empty state, and visible error state. Keep browser requests on relative `/api` paths and preserve the Vite proxy.
+- Logic tier decision: Keep HTTP handling in Express routes and capability behavior in `octofitService.ts`. Validate request data before database writes; return deliberate 4xx responses for invalid or missing resources and allow unexpected failures to reach the existing error handler.
+- Data tier decision: Use Mongoose models as the persistence contract. Require user name, email, and fitness goal; team name and mascot; activity user, team, type, minutes, points, and occurrence time; and workout title, focus, duration, and difficulty. Default team members to an empty array. Keep seed data idempotent and preserve unrelated existing records.
+- Activity tracking approach: Accept `userId`, `teamId`, `type`, and positive `minutes`; validate both IDs and confirm both referenced documents exist before creating an activity. Store the user/team references, use minutes as the points value, and set `occurredAt` when the activity is created.
+- Team management approach: List teams with their submitted names, mascots, and member IDs. Create teams while preserving those fields, default omitted members to an empty array, and reject a missing name with `400`.
+- Leaderboard approach: Aggregate activity points by team, include teams with no activities at zero, sort by total points descending, and assign 1-based ranks in the returned list.
+- Workout suggestions approach: Find the user by the requested email; return a 4xx if there is no match. Prefer the focus matching the user's most recent activity, otherwise use their fitness goal; return matching workouts first and include a reason that names the activity or goal behind the recommendation.
 
 ## Test plan
 
